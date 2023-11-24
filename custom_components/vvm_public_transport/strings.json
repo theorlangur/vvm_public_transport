@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Provide data for stop to monitor",
+        "description": "Data details below",
+        "data": {
+          "stop_id": "Stop ID",
+          "station": "Station name search"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Change options for this departure monitor",
+        "data": {
+          "timeframe": "Max. time to monitor departures",
+          "filter_direction": "Direction filter",
+          "filter_type": "Vehicle types filter",
+          "filter_num": "Vehicle numbers filter"
+        }
+      }
+    }
+  }
+}

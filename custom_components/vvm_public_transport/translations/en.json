@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Provide data for stop to monitor",
+        "description": "Data details below",
+        "data": {
+          "stop_id": "Stop ID",
+          "station": "Station name search"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "already_configured": "Already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Change options for this departure monitor",
+        "data": {
+          "timeframe": "Max. time to monitor departures",
+          "filter_direction": "Direction filter",
+          "filter_type": "Vehicle types filter",
+          "filter_num": "Vehicle numbers filter"
+        }
+      }
+    }
+  }
+}
