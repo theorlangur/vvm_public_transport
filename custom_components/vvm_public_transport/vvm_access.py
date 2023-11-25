@@ -33,8 +33,8 @@ class VVMAccessApi:
 
         data = await VVMAccessApi.fetch_data(base_url, params)
         result = []
-        if data:
-            points = data["stopFinder"]["points"]
+        if data and "stopFinder" in data:
+            points = data["stopFinder"].get("points", [])
             for p in points:
                 if (
                     p["type"] == "any"
@@ -61,7 +61,7 @@ class VVMAccessApi:
     async def get_stops_nearby(lat, lon, radius=500):
         """Obtain list of stops based on the passed coordinates and radius."""
         # https://mobile.defas-fgi.de/vvmapp/XML_COORD_REQUEST?
-        # coord=9.913781952051163:49.79625562837197:WGS84[DD.ddddd]&max=10&inclFilter=1&radius_1=500
+        # coord=9.999999999999999:49.11111111111111:WGS84[DD.ddddd]&max=10&inclFilter=1&radius_1=500
         # &type_1=STOP&stateless=1&language=en&outputFormat=XML&coordOutputFormat=WGS84[DD.ddddd]&coordOutputFormatTail=7
         base_url = "https://mobile.defas-fgi.de/vvmapp/XML_COORD_REQUEST"
         params = {
@@ -151,7 +151,7 @@ class VVMStopMonitor:
         """Retrieve the current departures for a stop of the current instance."""
         data = await self.get_departure_monitor_request(self.stop_id)
         result = []
-        if data:
+        if data and "departureList" in data:
             deps = data["departureList"]
             for d in deps:
                 if "servingLine" not in d:
