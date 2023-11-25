@@ -35,14 +35,13 @@ class VVMTransportTimetableCard extends HTMLElement {
             }
 
             const timetable = entity.attributes.departures.slice(0, maxEntries).map((departure) => 
-                `<div class="departure">
-                    <div class="line">
+                `   <div class="line">
                         <div class="line-icon" style="background-color: ${type_to_color[departure.type]}">${departure.type} ${departure.num}</div>
                     </div>
                     <div class="direction">${departure.to}</div>
-                    <div class="time">${departure.left}${departure.delay > 0 ? '(+' + departure.delay + ')' : ''} min</div>
+                    <div class="time">${departure.left}${departure.delay > 0 ? '(+' + departure.delay + ')' : ''}'</div>
                     <div class="time">${departure.real_time_simple}</div>
-                </div>`
+                `
             );
 
             content += `<div class="departures">` + timetable.join("\n") + `</div>`;
@@ -80,14 +79,9 @@ class VVMTransportTimetableCard extends HTMLElement {
                 font-weight: 400;
                 line-height: 1.5em;
                 padding-bottom: 20px;
-            }
-            .departure {
-                padding-top: 10px;
-                display: flex;
-                flex-direction: row;
-                flex-wrap: nowrap;
-                align-items: flex-start;
-                gap: 20px;
+                display: grid;
+                grid-template-columns: min-content 1fr min-content min-content;
+                gap: 10px;
             }
             .line {
                 min-width: 70px;
@@ -97,21 +91,21 @@ class VVMTransportTimetableCard extends HTMLElement {
                 display: inline-block;
                 border-radius: 20px;
                 padding: 7px 10px 5px;
-                font-size: 120%;
-                font-weight: 700;
+                font-size: 100%;
+                font-weight: 500;
                 line-height: 1em;
                 color: #FFFFFF;
                 text-align: center;
             }
             .direction {
-                align-self: center;
+                justify-self: start;
                 flex-grow: 1;
             }
             .time {
-                align-self: flex-start;
                 font-weight: 700;
                 line-height: 2em;
                 padding-right: 10px;
+                justify-self: start;
             }
         `;
      
