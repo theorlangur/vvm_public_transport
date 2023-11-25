@@ -160,29 +160,11 @@ class VVMStopMonitor:
                 if countdown < timespan:
                     i = {}
                     i["left"] = countdown
-                    if "delay" in d["servingLine"]:
-                        i["delay"] = int(d["servingLine"]["delay"])
-                    else:
-                        i["delay"] = 0
-                    i["type"] = d["servingLine"]["name"]
-                    i["num"] = d["servingLine"]["number"]
+                    i["delay"] = int(d["servingLine"].get("delay", "0"))
+                    i["type"] = d["servingLine"].get("name", "???")
+                    i["num"] = d["servingLine"].get("number", "???")
                     i["to"] = d["servingLine"]["direction"]
                     i["from"] = d["servingLine"]["directionFrom"]
-                    dt = d["realDateTime"]
-                    i["real_time"] = datetime(
-                        int(dt["year"]),
-                        int(dt["month"]),
-                        int(dt["day"]),
-                        int(dt["hour"]),
-                        int(dt["minute"]),
-                    )
-                    h = dt["hour"]
-                    if len(h) == 1:
-                        h = "0" + h
-                    m = dt["minute"]
-                    if len(m) == 1:
-                        m = "0" + m
-                    i["real_time_simple"] = h + ":" + m
                     dt = d["dateTime"]
                     i["should_time"] = datetime(
                         int(dt["year"]),
@@ -198,6 +180,24 @@ class VVMStopMonitor:
                     if len(m) == 1:
                         m = "0" + m
                     i["should_time_simple"] = h + ":" + m
+
+                    if "realDateTime" in d:
+                        dt = d["realDateTime"]
+
+                    i["real_time"] = datetime(
+                        int(dt["year"]),
+                        int(dt["month"]),
+                        int(dt["day"]),
+                        int(dt["hour"]),
+                        int(dt["minute"]),
+                    )
+                    h = dt["hour"]
+                    if len(h) == 1:
+                        h = "0" + h
+                    m = dt["minute"]
+                    if len(m) == 1:
+                        m = "0" + m
+                    i["real_time_simple"] = h + ":" + m
                     result.append(i)
         return result
 
