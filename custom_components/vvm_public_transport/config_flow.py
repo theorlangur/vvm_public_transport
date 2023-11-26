@@ -162,11 +162,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_FILTER_TYPE: user_input[CONF_FILTER_TYPE],
                 CONF_FILTER_NUM: user_input[CONF_FILTER_NUM],
                 CONF_FILTER_DIRECTION: user_input[CONF_FILTER_DIRECTION],
+                CONF_TIMEFRAME: user_input[CONF_TIMEFRAME],
             }
             # init here filters
             vvm.data.filter_types = user_input[CONF_FILTER_TYPE]
             vvm.data.filter_nums = user_input[CONF_FILTER_NUM]
             vvm.data.filter_direction = user_input[CONF_FILTER_DIRECTION]
+            vvm.data.timespan = user_input[CONF_TIMEFRAME]
             return self.async_create_entry(title="", data=options)
 
         if CONF_FILTER_TYPE in self.config_entry.options:

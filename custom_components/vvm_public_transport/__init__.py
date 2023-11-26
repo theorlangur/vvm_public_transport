@@ -37,6 +37,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             api.filter_nums = entry.options[CONF_FILTER_NUM]
         if CONF_FILTER_DIRECTION in entry.options:
             api.filter_direction = entry.options[CONF_FILTER_DIRECTION]
+        if CONF_TIMEFRAME in entry.options:
+            api.timespan = entry.options[CONF_TIMEFRAME]
 
     async def async_update_data() -> VVMStopMonitorHA:
         """Fetch data from the API."""
