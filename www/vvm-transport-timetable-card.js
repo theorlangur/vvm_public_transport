@@ -19,7 +19,11 @@ class VVMTransportTimetableCard extends HTMLElement {
 
         let type_to_color = {
             "Bus":"#0000FF",
-            "Starßenbahn":"#FF8000",
+            "Straßenbahn":"#FF8000",
+        }
+        let type_to_label = {
+            "Bus":"Bus",
+            "Straßenbahn":"Str"
         }
 
         let content = "";
@@ -36,7 +40,7 @@ class VVMTransportTimetableCard extends HTMLElement {
 
             const timetable = entity.attributes.departures.slice(0, maxEntries).map((departure) => 
                 `   <div class="line">
-                        <div class="line-icon" style="background-color: ${type_to_color[departure.type]}">${departure.type} ${departure.num}</div>
+                        <div class="line-icon" style="background-color: ${type_to_color[departure.type] || "#404040"}">${type_to_label[departure.type] || departure.type} ${departure.num}</div>
                     </div>
                     <div class="direction">${departure.to}</div>
                     <div class="time">${departure.left}${departure.delay > 0 ? '(+' + departure.delay + ')' : ''}'</div>
