@@ -1,8 +1,11 @@
 """VVM access module."""
 from datetime import datetime
 import json
+import logging
 
 import aiohttp
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class VVMAccessApi:
@@ -11,14 +14,25 @@ class VVMAccessApi:
     @staticmethod
     async def fetch_data(url, params):
         """Make an async HTTP request with given url and parameters."""
-        async with aiohttp.ClientSession() as session, session.get(
-            url, params=params
-        ) as response:
-            if response.status == 200:
-                resp_text = await response.text()
-                dec = resp_text
-                return json.loads(dec)
-            return None
+        try:
+            async with aiohttp.ClientSession() as session, session.get(
+                url, params=params
+            ) as response:
+                if response.status == 200:
+                    resp_text = await response.text()
+                    dec = resp_text
+                    return json.loads(dec)
+        except aiohttp.ClientError as e:
+            e_desc = f"Failed to retrieve data VVM request to {url}; Error: {e}"
+            _LOGGER.error(e_desc)
+            raise ValueError(f"Got connection error: {e}") from e
+        except json.JSONDecodeError as e:
+            e_desc = (
+                f"Got response that could not be decoded to JSON: {url}; Error: {e}"
+            )
+            _LOGGER.error(e_desc)
+            raise ValueError(f"Got json error: {e}") from e
+        raise ValueError(f"Failed to execute a request to {url}")
 
     @staticmethod
     async def get_stop_list(keyword):
@@ -31,9 +45,13 @@ class VVMAccessApi:
             "outputFormat": "json",
         }
 
-        data = await VVMAccessApi.fetch_data(base_url, params)
+        try:
+            data = await VVMAccessApi.fetch_data(base_url, params)
+        except ValueError:
+            return []
+
         result = []
-        if data and "stopFinder" in data:
+        if "stopFinder" in data:
             points = data["stopFinder"].get("points", [])
             for p in points:
                 if (
@@ -77,9 +95,12 @@ class VVMAccessApi:
             "outputFormat": "json",
         }
 
-        data = await VVMAccessApi.fetch_data(base_url, params)
+        try:
+            data = await VVMAccessApi.fetch_data(base_url, params)
+        except ValueError:
+            return []
         result = []
-        if data and "pins" in data:
+        if "pins" in data:
             points = data["pins"]
             for p in points:
                 if p["type"] == "STOP" and "id" in p:
@@ -123,35 +144,38 @@ class VVMStopMonitor:
     @staticmethod
     async def is_stop_id_valid(stop_id):
         """Check if given stop Id is valid."""
-        data = await VVMStopMonitor.get_departure_monitor_request(stop_id)
+        try:
+            data = await VVMStopMonitor.get_departure_monitor_request(stop_id)
+        except ValueError as e:
+            return (False, None, f"{e}")
+
         err_code = None
         err_msg = None
-        if data:
-            if data["departureList"]:
-                stop_name = None
-                if (
-                    "dm" in data
-                    and "points" in data["dm"]
-                    and "point" in data["dm"]["points"]
-                ):
-                    stop_name = data["dm"]["points"]["point"]["name"]
-                return (True, stop_name)
-            if data["dm"]:
-                dm = data["dm"]
-                if dm["message"]:
-                    for m in dm["message"]:
-                        if m["name"] == "code":
-                            err_code = int(m["value"])
-                        elif m["name"] == "error":
-                            err_msg = m["value"]
-                    return (False, err_code, err_msg)
+        if "departureList" in data:
+            stop_name = None
+            if (
+                "dm" in data
+                and "points" in data["dm"]
+                and "point" in data["dm"]["points"]
+            ):
+                stop_name = data["dm"]["points"]["point"]["name"]
+            return (True, stop_name)
+        if "dm" in data:
+            dm = data["dm"]
+            if dm["message"]:
+                for m in dm["message"]:
+                    if m["name"] == "code":
+                        err_code = int(m["value"])
+                    elif m["name"] == "error":
+                        err_msg = m["value"]
+                return (False, err_code, err_msg)
         return (False, err_code, err_msg)
 
     async def get_stop_departures(self, timespan=30):
         """Retrieve the current departures for a stop of the current instance."""
         data = await self.get_departure_monitor_request(self.stop_id)
         result = []
-        if data and "departureList" in data:
+        if "departureList" in data:
             deps = data["departureList"]
             for d in deps:
                 if "servingLine" not in d:
@@ -209,6 +233,9 @@ class VVMStopMonitorHA:
     timespan: int
     departures: list[dict]
     last_updated: datetime
+    last_updated_simple: str
+    stale: bool
+    last_error: str
     nearest_summary: str
     nearest_left_minutes: int
     nearest_delay_minutes: int
@@ -223,6 +250,9 @@ class VVMStopMonitorHA:
         self.timespan = timespan
         self._filters = {}
         self._stop_name = stop_name
+        self.stale = False
+        self.last_error = ""
+        self.last_updated_simple = "XX:XX"
 
     def filter_departure_in(self, d):
         """Filter departure in if it fits."""
@@ -258,9 +288,18 @@ class VVMStopMonitorHA:
 
     async def async_update(self):
         """Update departures async."""
-        deps = await self.api.get_stop_departures(self.timespan)
+        try:
+            deps = await self.api.get_stop_departures(self.timespan)
+        except ValueError as e:
+            self.stale = True
+            self.last_error = f"{e}"
+            return
+
+        self.stale = False
+        self.last_error = ""
         self.departures = [d for d in deps if self.filter_departure_in(d)]
         self.last_updated = datetime.now()
+        self.last_updated_simple = self.last_updated.strftime("%H:%M")
         if len(self.departures) > 0:
             closest = self.departures[0]
             self.nearest_summary = "({:d} min) {} {} ({})".format(

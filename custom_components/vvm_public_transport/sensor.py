@@ -41,6 +41,9 @@ class VVMStopDepartureNearest(VVMStopSensorEntityBase):
         self.extra = {
             "departures": self.coordinator.data.departures,
             "last_updated": self.coordinator.data.last_updated,
+            "last_updated_simple": self.coordinator.data.last_updated_simple,
+            "stop_name": self.coordinator.data.stop_name,
+            "stale": self.coordinator.data.stale,
         }
 
     @property
@@ -48,7 +51,9 @@ class VVMStopDepartureNearest(VVMStopSensorEntityBase):
         """Return the state attributes of the device."""
         self.extra["departures"] = self.coordinator.data.departures
         self.extra["last_updated"] = self.coordinator.data.last_updated
+        self.extra["last_updated_simple"] = self.coordinator.data.last_updated_simple
         self.extra["stop_name"] = self.coordinator.data.stop_name
+        self.extra["stale"] = self.coordinator.data.stale
         return self.extra
 
     @property

@@ -34,17 +34,23 @@ class VVMTransportTimetableCard extends HTMLElement {
                 throw new Error("Entity State Unavailable");
             }
 
+            const isStale = 'stale' in entity.attributes ? entity.attributes['stale'] : true
+            const lastUpdateSimple = 'last_updated_simple' in entity.attributes ? entity.attributes['last_updated_simple'] : ''
+
             if (showStopName) {
-                content += `<div class="stop">${entity.attributes.stop_name}</div>`;
+                content += `<div class="stop">${entity.attributes.stop_name}${isStale ? '(' + lastUpdateSimple + ')' : ''}</div>`;
             }
 
-            const timetable = entity.attributes.departures.slice(0, maxEntries).map((departure) => 
+            const staleColorStyle = isStale ? `style="color: #808080"` : '';
+
+            const departures = 'departures' in entity.attributes ? entity.attributes.departures : []
+            const timetable = departures.slice(0, maxEntries).map((departure) => 
                 `   <div class="line">
                         <div class="line-icon" style="background-color: ${type_to_color[departure.type] || "#404040"}">${type_to_label[departure.type] || departure.type} ${departure.num}</div>
                     </div>
                     <div class="direction">${departure.to}</div>
-                    <div class="time">${departure.left}${departure.delay > 0 ? '(+' + departure.delay + ')' : ''}'</div>
-                    <div class="time">${departure.real_time_simple}</div>
+                    <div class="time" ${staleColorStyle}>${departure.left}${departure.delay > 0 ? '(+' + departure.delay + ')' : ''}'</div>
+                    <div class="time" ${staleColorStyle}>${departure.real_time_simple}</div>
                 `
             );
 
