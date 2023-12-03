@@ -177,6 +177,8 @@ class VVMStopMonitor:
         result = []
         if "departureList" in data:
             deps = data["departureList"]
+            if not isinstance(deps, list):
+                return result
             for d in deps:
                 if "servingLine" not in d:
                     continue
